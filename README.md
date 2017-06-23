@@ -1,4 +1,4 @@
-akka-stream-elasticsearch
+akka-stream-elasticsearch [![Build Status](https://travis-ci.org/takezoe/akka-stream-elasticsearch.svg?branch=master)](https://travis-ci.org/takezoe/akka-stream-elasticsearch)
 ========
 The Elasticsearch connector provides Akka Stream sources and sinks for Elasticsearch.
 
