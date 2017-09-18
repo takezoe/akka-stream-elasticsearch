@@ -9,7 +9,7 @@ For more information about Elasticsearch please visit the [official documentatio
 - sbt:
 
   ```scala
-  libraryDependencies += "com.github.takezoe" %% "akka-stream-elasticsearch" % "1.0.0"
+  libraryDependencies += "com.github.takezoe" %% "akka-stream-elasticsearch" % "1.1.0"
   ```
 
 - Maven:
@@ -18,7 +18,7 @@ For more information about Elasticsearch please visit the [official documentatio
   <dependency>
     <groupId>com.github.takezoe</groupId>
     <artifactId>akka-stream-elasticsearch_2.12</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
   </dependency>
   ```
 
@@ -26,7 +26,7 @@ For more information about Elasticsearch please visit the [official documentatio
 
   ```gradle
   dependencies {
-    compile group: "com.github.takezoe", name: "akka-stream-elasticsearch_2.12", version: "1.0.0"
+    compile group: "com.github.takezoe", name: "akka-stream-elasticsearch_2.12", version: "1.1.0"
   }
   ```
 
@@ -97,14 +97,14 @@ from or to Elasticsearch where we have access to by providing the `RestClient` t
       "source",
       "book",
       "{\"match_all\": {}}",
-      new ElasticsearchSourceSettings(5),
+      new ElasticsearchSourceSettings().withBufferSize(5),
       client)
       .map(m -> new IncomingMessage<>(new Some<String>(m.id()), m.source()))
       .runWith(
           ElasticsearchSink.create(
               "sink1",
               "book",
-              new ElasticsearchSinkSettings(5),
+              new ElasticsearchSinkSettings().withBufferSize(5),
               client),
           materializer);
   ```
@@ -160,7 +160,7 @@ Use `ElasticsearchSource.typed` and `ElasticsearchSink.typed` to create source a
       "source",
       "book",
       "{\"match_all\": {}}",
-      new ElasticsearchSourceSettings(5),
+      new ElasticsearchSourceSettings().withBufferSize(5),
       client,
       Book.class)
       .map(m -> new IncomingMessage<>(new Some<String>(m.id()), m.source()))
@@ -168,7 +168,7 @@ Use `ElasticsearchSource.typed` and `ElasticsearchSink.typed` to create source a
           ElasticsearchSink.typed(
               "sink2",
               "book",
-              new ElasticsearchSinkSettings(5),
+              new ElasticsearchSinkSettings().withBufferSize(5),
               client),
           materializer);
   ```
@@ -222,18 +222,18 @@ You can also build flow stages. The API is similar to creating Sinks.
 - Java (flow):
 
   ```java
-  CompletionStage<List<Response>> f1 = ElasticsearchSource.typed(
+  CompletionStage<List<List<IncomingMessage<Book>>>> f1 = ElasticsearchSource.typed(
       "source",
       "book",
       "{\"match_all\": {}}",
-      new ElasticsearchSourceSettings(5),
+      new ElasticsearchSourceSettings().withBufferSize(5),
       client,
       Book.class)
       .map(m -> new IncomingMessage<>(new Some<String>(m.id()), m.source()))
       .via(ElasticsearchFlow.typed(
           "sink3",
           "book",
-          new ElasticsearchSinkSettings(5),
+          new ElasticsearchSinkSettings().withBufferSize(5),
           client))
       .runWith(Sink.seq(), materializer);
   ```

@@ -2,7 +2,7 @@ name := "akka-stream-elasticsearch"
 
 organization := "com.github.takezoe"
 
-version := "1.1.0-SNAPSHOT"
+version := "1.1.0"
 
 scalaVersion := "2.12.2"
 
