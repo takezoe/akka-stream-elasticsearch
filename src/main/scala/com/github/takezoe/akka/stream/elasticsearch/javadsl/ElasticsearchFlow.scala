@@ -3,8 +3,10 @@ package com.github.takezoe.akka.stream.elasticsearch.javadsl
 import akka.NotUsed
 import akka.stream.scaladsl.Flow
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.elasticsearch.client.{Response, RestClient}
+import org.elasticsearch.client.RestClient
 import com.github.takezoe.akka.stream.elasticsearch._
+import scala.collection.JavaConverters._
+import java.util.{Map => JavaMap, List => JavaList}
 
 object ElasticsearchFlow {
 
@@ -16,14 +18,18 @@ object ElasticsearchFlow {
       typeName: String,
       settings: ElasticsearchSinkSettings,
       client: RestClient
-  ): akka.stream.javadsl.Flow[IncomingMessage[java.util.Map[String, Object]], Response, NotUsed] =
+  ): akka.stream.javadsl.Flow[IncomingMessage[JavaMap[String, Object]],
+                              JavaList[IncomingMessage[JavaMap[String, Object]]], NotUsed] =
     Flow
       .fromGraph(
-        new ElasticsearchFlowStage(indexName,
-                                   typeName,
-                                   client,
-                                   settings,
-                                   new JacksonWriter[java.util.Map[String, Object]]())
+        new ElasticsearchFlowStage[JavaMap[String, Object], JavaList[IncomingMessage[JavaMap[String, Object]]]](
+          indexName,
+          typeName,
+          client,
+          settings.asScala,
+          _.asJava,
+          new JacksonWriter[java.util.Map[String, Object]]()
+        )
       )
       .mapAsync(1)(identity)
       .asJava
@@ -31,13 +37,22 @@ object ElasticsearchFlow {
   /**
    * Java API: creates a [[ElasticsearchFlowStage]] that accepts specific type
    */
-  def typed[T](indexName: String,
-               typeName: String,
-               settings: ElasticsearchSinkSettings,
-               client: RestClient): akka.stream.javadsl.Flow[IncomingMessage[T], Response, NotUsed] =
+  def typed[T](
+    indexName: String,
+     typeName: String,
+     settings: ElasticsearchSinkSettings,
+     client: RestClient
+  ): akka.stream.javadsl.Flow[IncomingMessage[T], JavaList[IncomingMessage[T]], NotUsed] =
     Flow
       .fromGraph(
-        new ElasticsearchFlowStage[T](indexName, typeName, client, settings, new JacksonWriter[T]())
+        new ElasticsearchFlowStage[T, JavaList[IncomingMessage[T]]](
+          indexName,
+          typeName,
+          client,
+          settings.asScala,
+          _.asJava,
+          new JacksonWriter[T]()
+        )
       )
       .mapAsync(1)(identity)
       .asJava

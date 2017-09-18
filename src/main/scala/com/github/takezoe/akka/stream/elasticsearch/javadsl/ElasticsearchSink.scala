@@ -25,10 +25,12 @@ object ElasticsearchSink {
   /**
    * Java API: creates a sink based on [[ElasticsearchFlowStage]] that accepts as specific type
    */
-  def typed[T](indexName: String,
-               typeName: String,
-               settings: ElasticsearchSinkSettings,
-               client: RestClient): akka.stream.javadsl.Sink[IncomingMessage[T], CompletionStage[Done]] =
+  def typed[T](
+    indexName: String,
+    typeName: String,
+    settings: ElasticsearchSinkSettings,
+    client: RestClient
+  ): akka.stream.javadsl.Sink[IncomingMessage[T], CompletionStage[Done]] =
     ElasticsearchFlow
       .typed(indexName, typeName, settings, client)
       .toMat(Sink.ignore, Keep.right[NotUsed, CompletionStage[Done]])

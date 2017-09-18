@@ -13,18 +13,20 @@ object ElasticsearchSource {
   /**
    * Java API: creates a [[ElasticsearchSourceStage]] that consumes as java.util.Map
    */
-  def create(indexName: String,
-             typeName: String,
-             query: String,
-             settings: ElasticsearchSourceSettings,
-             client: RestClient): Source[OutgoingMessage[java.util.Map[String, Object]], NotUsed] =
+  def create(
+    indexName: String,
+    typeName: String,
+    query: String,
+    settings: ElasticsearchSourceSettings,
+    client: RestClient
+  ): Source[OutgoingMessage[java.util.Map[String, Object]], NotUsed] =
     Source.fromGraph(
       new ElasticsearchSourceStage(
         indexName,
         typeName,
         query,
         client,
-        settings,
+        settings.asScala,
         new JacksonReader[java.util.Map[String, Object]](classOf[java.util.Map[String, Object]])
       )
     )
@@ -32,14 +34,23 @@ object ElasticsearchSource {
   /**
    * Java API: creates a [[ElasticsearchSourceStage]] that consumes as specific type
    */
-  def typed[T](indexName: String,
-               typeName: String,
-               query: String,
-               settings: ElasticsearchSourceSettings,
-               client: RestClient,
-               clazz: Class[T]): Source[OutgoingMessage[T], NotUsed] =
+  def typed[T](
+    indexName: String,
+    typeName: String,
+    query: String,
+    settings: ElasticsearchSourceSettings,
+    client: RestClient,
+    clazz: Class[T]
+  ): Source[OutgoingMessage[T], NotUsed] =
     Source.fromGraph(
-      new ElasticsearchSourceStage(indexName, typeName, query, client, settings, new JacksonReader[T](clazz))
+      new ElasticsearchSourceStage(
+        indexName,
+        typeName,
+        query,
+        client,
+        settings.asScala,
+        new JacksonReader[T](clazz)
+      )
     )
 
   private class JacksonReader[T](clazz: Class[T]) extends MessageReader[T] {

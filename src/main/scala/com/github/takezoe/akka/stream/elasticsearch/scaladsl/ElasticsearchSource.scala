@@ -13,7 +13,7 @@ object ElasticsearchSource {
    * Scala API: creates a [[ElasticsearchSourceStage]] that consumes as JsObject
    */
   def apply(indexName: String, typeName: String, query: String, settings: ElasticsearchSourceSettings)(
-      implicit client: RestClient
+    implicit client: RestClient
   ): Source[OutgoingMessage[JsObject], NotUsed] =
     Source.fromGraph(
       new ElasticsearchSourceStage(
@@ -30,8 +30,8 @@ object ElasticsearchSource {
    * Scala API: creates a [[ElasticsearchSourceStage]] that consumes as specific type
    */
   def typed[T](indexName: String, typeName: String, query: String, settings: ElasticsearchSourceSettings)(
-      implicit client: RestClient,
-      reader: JsonReader[T]
+    implicit client: RestClient,
+    reader: JsonReader[T]
   ): Source[OutgoingMessage[T], NotUsed] =
     Source.fromGraph(
       new ElasticsearchSourceStage(indexName, typeName, query, client, settings, new SprayJsonReader[T]()(reader))

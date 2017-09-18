@@ -199,9 +199,8 @@ class ElasticsearchSpec extends WordSpec with Matchers with BeforeAndAfterAll {
       val result1 = Await.result(f1, Duration.Inf)
       flush("sink3")
 
-      // Assert responses
-      val results = result1.map(_.getStatusLine.getStatusCode)
-      assert(results == Seq(200, 200))
+      // Assert no error
+      assert(result1.forall(_.isEmpty))
 
       // Assert docs in sink3/book
       val f2 = ElasticsearchSource
