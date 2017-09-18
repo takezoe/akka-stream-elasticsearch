@@ -2,18 +2,18 @@ name := "akka-stream-elasticsearch"
 
 organization := "com.github.takezoe"
 
-version := "1.0.0"
+version := "1.1.0-SNAPSHOT"
 
 scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka"          %% "akka-stream"                  % "2.5.1",
-  "org.elasticsearch.client"   %  "rest"                         % "5.2.2",
+  "com.typesafe.akka"          %% "akka-stream"                  % "2.5.4",
+  "org.elasticsearch.client"   %  "rest"                         % "5.5.3",
   "io.spray"                   %% "spray-json"                   % "1.3.3",
-  "com.fasterxml.jackson.core" %  "jackson-databind"             % "2.9.0.pr3",
-  "com.typesafe.akka"          %% "akka-stream-testkit"          % "2.5.1"     % "test",
-  "org.codelibs"               %  "elasticsearch-cluster-runner" % "5.1.1.0"   % "test",
-  "org.scalatest"              %% "scalatest"                    % "3.0.1"     % "test",
+  "com.fasterxml.jackson.core" %  "jackson-databind"             % "2.9.1",
+  "com.typesafe.akka"          %% "akka-stream-testkit"          % "2.5.4"     % "test",
+  "org.codelibs"               %  "elasticsearch-cluster-runner" % "5.6.0.0"   % "test",
+  "org.scalatest"              %% "scalatest"                    % "3.0.4"     % "test",
   "junit"                      %  "junit"                        % "4.12"      % "test",
   "com.novocode"               %  "junit-interface"              % "0.11"      % "test"
 )
