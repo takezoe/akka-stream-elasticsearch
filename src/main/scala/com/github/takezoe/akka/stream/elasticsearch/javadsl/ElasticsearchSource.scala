@@ -5,7 +5,6 @@ import akka.stream.javadsl.Source
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.elasticsearch.client.RestClient
 import com.github.takezoe.akka.stream.elasticsearch._
-
 import scala.collection.JavaConverters._
 
 object ElasticsearchSource {
@@ -13,13 +12,11 @@ object ElasticsearchSource {
   /**
    * Java API: creates a [[ElasticsearchSourceStage]] that consumes as java.util.Map
    */
-  def create(
-    indexName: String,
-    typeName: String,
-    query: String,
-    settings: ElasticsearchSourceSettings,
-    client: RestClient
-  ): Source[OutgoingMessage[java.util.Map[String, Object]], NotUsed] =
+  def create(indexName: String,
+             typeName: String,
+             query: String,
+             settings: ElasticsearchSourceSettings,
+             client: RestClient): Source[OutgoingMessage[java.util.Map[String, Object]], NotUsed] =
     Source.fromGraph(
       new ElasticsearchSourceStage(
         indexName,
@@ -34,14 +31,12 @@ object ElasticsearchSource {
   /**
    * Java API: creates a [[ElasticsearchSourceStage]] that consumes as specific type
    */
-  def typed[T](
-    indexName: String,
-    typeName: String,
-    query: String,
-    settings: ElasticsearchSourceSettings,
-    client: RestClient,
-    clazz: Class[T]
-  ): Source[OutgoingMessage[T], NotUsed] =
+  def typed[T](indexName: String,
+               typeName: String,
+               query: String,
+               settings: ElasticsearchSourceSettings,
+               client: RestClient,
+               clazz: Class[T]): Source[OutgoingMessage[T], NotUsed] =
     Source.fromGraph(
       new ElasticsearchSourceStage(
         indexName,

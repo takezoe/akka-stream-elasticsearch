@@ -3,7 +3,7 @@ package com.github.takezoe.akka.stream.elasticsearch.javadsl
 import com.github.takezoe.akka.stream.elasticsearch._
 import scaladsl.{ElasticsearchSinkSettings => ScalaElasticsearchSinkSettings}
 
-class ElasticsearchSinkSettings(val bufferSize: Int, val retryInterval: Int, val maxRetry: Int){
+final class ElasticsearchSinkSettings(val bufferSize: Int, val retryInterval: Int, val maxRetry: Int) {
 
   def this() = this(10, 5000, 100)
 

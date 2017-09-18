@@ -1,7 +1,7 @@
 package com.github.takezoe.akka.stream.elasticsearch
 
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
-import akka.stream.stage.{GraphStage, InHandler, OutHandler, TimerGraphStageLogic}
+import akka.stream.stage._
 import org.apache.http.entity.StringEntity
 import org.elasticsearch.client.{Response, ResponseListener, RestClient}
 
@@ -36,7 +36,7 @@ class ElasticsearchFlowStage[T, R](
   private val out = Outlet[Future[R]]("failed")
   override val shape = FlowShape(in, out)
 
-  override def createLogic(inheritedAttributes: Attributes): TimerGraphStageLogic =
+  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
     new TimerGraphStageLogic(shape) with InHandler with OutHandler {
 
       private var state: State = Idle
@@ -60,15 +60,13 @@ class ElasticsearchFlowStage[T, R](
       }
 
       private def handleFailure(args: (Seq[IncomingMessage[T]], Throwable)): Unit = {
-        args match {
-          case (messages, exception) =>
-            if(retryCount >= settings.maxRetry){
-              failStage(exception)
-            } else {
-              retryCount = retryCount + 1
-              failedMessages = messages
-              scheduleOnce(NotUsed, settings.retryInterval.millis)
-            }
+        val (messages, exception) = args
+        if (retryCount >= settings.maxRetry) {
+          failStage(exception)
+        } else {
+          retryCount = retryCount + 1
+          failedMessages = messages
+          scheduleOnce(NotUsed, settings.retryInterval.millis)
         }
       }
 
@@ -77,38 +75,36 @@ class ElasticsearchFlowStage[T, R](
 
       private def handleResponse(args: (Seq[IncomingMessage[T]], Response)): Unit = {
         retryCount = 0
+        val (messages, response) = args
+        val responseJson = EntityUtils.toString(response.getEntity).parseJson
 
-        args match {
-          case (messages, response) =>
-            val responseJson = EntityUtils.toString(response.getEntity).parseJson
-
-            // If some commands in bulk request failed, pass failed messages to follows.
-            val items = responseJson.asJsObject.fields("items").asInstanceOf[JsArray]
-            val failedMessages = items.elements.zip(messages).flatMap { case (item, message) =>
-              val result = item.asJsObject.fields("index").asJsObject.fields("result").asInstanceOf[JsString].value
-              if (result == "created" || result == "updated") {
-                None
-              } else {
-                Some(message)
-              }
-            }
-
-            // Fetch next messages from queue and send them
-            val nextMessages = (1 to settings.bufferSize).flatMap { _ =>
-              queue.dequeueFirst(_ => true)
-            }
-
-            if (nextMessages.isEmpty) {
-              state match {
-                case Finished => handleSuccess()
-                case _ => state = Idle
-              }
+        // If some commands in bulk request failed, pass failed messages to follows.
+        val items = responseJson.asJsObject.fields("items").asInstanceOf[JsArray]
+        val failedMessages = items.elements.zip(messages).flatMap {
+          case (item, message) =>
+            val result = item.asJsObject.fields("index").asJsObject.fields("result").asInstanceOf[JsString].value
+            if (result == "created" || result == "updated") {
+              None
             } else {
-              sendBulkUpdateRequest(nextMessages)
+              Some(message)
             }
-
-            push(out, Future.successful(pusher(failedMessages)))
         }
+
+        // Fetch next messages from queue and send them
+        val nextMessages = (1 to settings.bufferSize).flatMap { _ =>
+          queue.dequeueFirst(_ => true)
+        }
+
+        if (nextMessages.isEmpty) {
+          state match {
+            case Finished => handleSuccess()
+            case _ => state = Idle
+          }
+        } else {
+          sendBulkUpdateRequest(nextMessages)
+        }
+
+        push(out, Future.successful(pusher(failedMessages)))
       }
 
       private def sendBulkUpdateRequest(messages: Seq[IncomingMessage[T]]): Unit = {
@@ -128,19 +124,16 @@ class ElasticsearchFlowStage[T, R](
           }
           .mkString("", "\n", "\n")
 
-
         client.performRequestAsync(
           "POST",
           "/_bulk",
           Map[String, String]().asJava,
           new StringEntity(json),
-          new ResponseListener {
-            override def onFailure(exception: Exception): Unit = {
-              failureHandler.invoke(messages, exception)
-            }
-            override def onSuccess(response: Response): Unit = {
-              responseHandler.invoke(messages, response)
-            }
+          new ResponseListener() {
+            override def onFailure(exception: Exception): Unit =
+              failureHandler.invoke((messages, exception))
+            override def onSuccess(response: Response): Unit =
+              responseHandler.invoke((messages, response))
           },
           new BasicHeader("Content-Type", "application/x-ndjson")
         )

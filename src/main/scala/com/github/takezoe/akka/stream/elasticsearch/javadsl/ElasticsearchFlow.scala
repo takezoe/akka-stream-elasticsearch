@@ -18,8 +18,9 @@ object ElasticsearchFlow {
       typeName: String,
       settings: ElasticsearchSinkSettings,
       client: RestClient
-  ): akka.stream.javadsl.Flow[IncomingMessage[JavaMap[String, Object]],
-                              JavaList[IncomingMessage[JavaMap[String, Object]]], NotUsed] =
+  ): akka.stream.javadsl.Flow[IncomingMessage[JavaMap[String, Object]], JavaList[
+    IncomingMessage[JavaMap[String, Object]]
+  ], NotUsed] =
     Flow
       .fromGraph(
         new ElasticsearchFlowStage[JavaMap[String, Object], JavaList[IncomingMessage[JavaMap[String, Object]]]](
@@ -28,7 +29,7 @@ object ElasticsearchFlow {
           client,
           settings.asScala,
           _.asJava,
-          new JacksonWriter[java.util.Map[String, Object]]()
+          new JacksonWriter[JavaMap[String, Object]]()
         )
       )
       .mapAsync(1)(identity)
@@ -38,21 +39,19 @@ object ElasticsearchFlow {
    * Java API: creates a [[ElasticsearchFlowStage]] that accepts specific type
    */
   def typed[T](
-    indexName: String,
-     typeName: String,
-     settings: ElasticsearchSinkSettings,
-     client: RestClient
+      indexName: String,
+      typeName: String,
+      settings: ElasticsearchSinkSettings,
+      client: RestClient
   ): akka.stream.javadsl.Flow[IncomingMessage[T], JavaList[IncomingMessage[T]], NotUsed] =
     Flow
       .fromGraph(
-        new ElasticsearchFlowStage[T, JavaList[IncomingMessage[T]]](
-          indexName,
-          typeName,
-          client,
-          settings.asScala,
-          _.asJava,
-          new JacksonWriter[T]()
-        )
+        new ElasticsearchFlowStage[T, JavaList[IncomingMessage[T]]](indexName,
+                                                                    typeName,
+                                                                    client,
+                                                                    settings.asScala,
+                                                                    _.asJava,
+                                                                    new JacksonWriter[T]())
       )
       .mapAsync(1)(identity)
       .asJava
