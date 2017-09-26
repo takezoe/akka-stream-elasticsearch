@@ -1,8 +1,11 @@
 akka-stream-elasticsearch [![Build Status](https://travis-ci.org/takezoe/akka-stream-elasticsearch.svg?branch=master)](https://travis-ci.org/takezoe/akka-stream-elasticsearch)
 ========
+
 The Elasticsearch connector provides Akka Stream sources and sinks for Elasticsearch.
 
 For more information about Elasticsearch please visit the [official documentation](https://www.elastic.co/guide/index.html).
+
+This connector is availavle as a part of Alpakka (https://github.com/akka/alpakka/pull/221). I would like to test improvements or new features at this repository and feedback them to Alpakka.
 
 ## Artifacts
 
