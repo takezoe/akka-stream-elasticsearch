@@ -74,7 +74,6 @@ class ElasticsearchFlowStage[T, R](
         completeStage()
 
       private def handleResponse(args: (Seq[IncomingMessage[T]], Response)): Unit = {
-        retryCount = 0
         val (messages, response) = args
         val responseJson = EntityUtils.toString(response.getEntity).parseJson
 
@@ -97,6 +96,8 @@ class ElasticsearchFlowStage[T, R](
           scheduleOnce(NotUsed, settings.retryInterval.millis)
 
         } else {
+          retryCount = 0
+
           // Fetch next messages from queue and send them
           val nextMessages = (1 to settings.bufferSize).flatMap { _ =>
             queue.dequeueFirst(_ => true)
