@@ -18,8 +18,8 @@ import spray.json.{JsString, _}
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-
 import com.github.takezoe.akka.stream.elasticsearch.scaladsl._
+import org.apache.http.message.BasicHeader
 
 class ElasticsearchSpec extends WordSpec with Matchers with BeforeAndAfterAll {
 
@@ -72,7 +72,8 @@ class ElasticsearchSpec extends WordSpec with Matchers with BeforeAndAfterAll {
     client.performRequest("POST",
                           s"$indexName/book",
                           Map[String, String]().asJava,
-                          new StringEntity(s"""{"title": "$title"}"""))
+                          new StringEntity(s"""{"title": "$title"}"""),
+                          new BasicHeader("Content-Type", "application/json"))
 
   "Elasticsearch connector" should {
     "consume and publish documents as JsObject" in {

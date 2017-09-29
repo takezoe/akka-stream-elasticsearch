@@ -11,8 +11,8 @@ import akka.testkit.JavaTestKit;
 import com.github.takezoe.akka.stream.elasticsearch.javadsl.*;
 import org.apache.http.HttpHost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
-import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -81,10 +81,11 @@ public class ElasticsearchTest {
   }
 
   private static void register(String indexName, String title) throws IOException {
-    client.performRequest("POST",
-    indexName + "/book",
-    new HashMap<>(),
-    new StringEntity(String.format("{\"title\": \"%s\"}", title)));
+    client.performRequest("POST", indexName + "/book",
+      new HashMap<>(),
+      new StringEntity(String.format("{\"title\": \"%s\"}", title)),
+      new BasicHeader("Content-Type", "application/json")
+    );
   }
 
 
