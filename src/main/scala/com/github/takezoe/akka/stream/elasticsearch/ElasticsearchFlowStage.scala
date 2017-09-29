@@ -80,7 +80,7 @@ class ElasticsearchFlowStage[T, R](
 
         // If some commands in bulk request failed, pass failed messages to follows.
         val items = responseJson.asJsObject.fields("items").asInstanceOf[JsArray]
-        val failedMessages = items.elements.zip(messages).flatMap {
+        val failed = items.elements.zip(messages).flatMap {
           case (item, message) =>
             val result = item.asJsObject.fields("index").asJsObject.fields("result").asInstanceOf[JsString].value
             if (result == "created" || result == "updated") {
@@ -90,21 +90,29 @@ class ElasticsearchFlowStage[T, R](
             }
         }
 
-        // Fetch next messages from queue and send them
-        val nextMessages = (1 to settings.bufferSize).flatMap { _ =>
-          queue.dequeueFirst(_ => true)
-        }
+        if (failed.nonEmpty && settings.retryPartialFailure) {
+          // Retry partial failed messages
+          retryCount = retryCount + 1
+          failedMessages = failed
+          scheduleOnce(NotUsed, settings.retryInterval.millis)
 
-        if (nextMessages.isEmpty) {
-          state match {
-            case Finished => handleSuccess()
-            case _ => state = Idle
-          }
         } else {
-          sendBulkUpdateRequest(nextMessages)
-        }
+          // Fetch next messages from queue and send them
+          val nextMessages = (1 to settings.bufferSize).flatMap { _ =>
+            queue.dequeueFirst(_ => true)
+          }
 
-        push(out, Future.successful(pusher(failedMessages)))
+          if (nextMessages.isEmpty) {
+            state match {
+              case Finished => handleSuccess()
+              case _ => state = Idle
+            }
+          } else {
+            sendBulkUpdateRequest(nextMessages)
+          }
+
+          push(out, Future.successful(pusher(failed)))
+        }
       }
 
       private def sendBulkUpdateRequest(messages: Seq[IncomingMessage[T]]): Unit = {
