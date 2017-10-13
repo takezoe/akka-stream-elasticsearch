@@ -81,11 +81,8 @@ class ElasticsearchFlowStage[T, R](
         val items = responseJson.asJsObject.fields("items").asInstanceOf[JsArray]
         val failed = items.elements.zip(messages).flatMap {
           case (item, message) =>
-            val result = item.asJsObject.fields("index").asJsObject.fields("result").asInstanceOf[JsString].value
-            if (result == "created" || result == "updated") {
-              None
-            } else {
-              Some(message)
+            item.asJsObject.fields("index").asJsObject.fields.get("error").map { _ =>
+              message
             }
         }
 
