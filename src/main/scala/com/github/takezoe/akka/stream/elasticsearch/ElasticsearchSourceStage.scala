@@ -1,6 +1,7 @@
 package com.github.takezoe.akka.stream.elasticsearch
 
 import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets
 
 import akka.stream.{Attributes, Outlet, SourceShape}
 import akka.stream.stage.{GraphStage, GraphStageLogic, OutHandler}
@@ -90,7 +91,7 @@ sealed class ElasticsearchSourceLogic[T](indexName: String,
       val out = new ByteArrayOutputStream()
       try {
         res.getEntity.writeTo(out)
-        new String(out.toByteArray, "UTF-8")
+        new String(out.toByteArray, StandardCharsets.UTF_8)
       } finally {
         out.close()
       }
