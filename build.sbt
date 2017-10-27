@@ -2,9 +2,9 @@ name := "akka-stream-elasticsearch"
 
 organization := "com.github.takezoe"
 
-version := "1.1.0"
+version := "1.1.1"
 
-scalaVersion := "2.12.2"
+scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka"          %% "akka-stream"                  % "2.5.4",
