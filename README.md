@@ -178,22 +178,35 @@ Use `ElasticsearchSource.typed` and `ElasticsearchSink.typed` to create source a
 
 ### Configuration
 
-We can specify the buffer size for the source and the sink.
+We can configure the source by `ElasticsearchSourceSettings`.
 
-- Scala (source):
+Scala (source)
 
   ```scala
   final case class ElasticsearchSourceSettings(bufferSize: Int = 10)
   ```
 
-- Scala (sink):
+| Parameter  | Default | Description                                                                                                              |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| bufferSize | 10      | `ElasticsearchSource` retrieves messages from Elasticsearch by scroll scan. This buffer size is used as the scroll size. | 
+
+Also, we can configure the sink by `ElasticsearchSinkSettings`.
+
+Scala (sink)
 
   ```scala
-  final case class ElasticsearchSinkSettings(bufferSize: Int = 10)
+  final case class ElasticsearchSinkSettings(bufferSize: Int = 10,
+                                             retryInterval: Int = 5000,
+                                             maxRetry: Int = 100,
+                                             retryPartialFailure: Boolean = true)
   ```
 
-`ElasticsearchSource` retrieves messages from Elasticsearch by scroll scan. This buffer size is used as the scroll size.
-`ElasticsearchSink` puts messages by one bulk request per messages of this buffer size.
+| Parameter           | Default | Description                                                                                            |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| bufferSize          | 10      | `ElasticsearchSink` puts messages by one bulk request per messages of this buffer size.                |
+| retryInterval       | 5000    | When a request is failed, `ElasticsearchSink` retries that request after this interval (milliseconds). |
+| maxRetry            | 100     | `ElasticsearchSink` give up and fails the stage if it gets this number of consective failures.         | 
+| retryPartialFailure | true    | A bulk request might fails partially for some reason. If this parameter is true, then `ElasticsearchSink` retries to request these failed messages. Otherwise, failed messages are discarded (or pushed to downstream if you use `ElasticsearchFlow` instead of the sink). |
 
 ### Using Elasticsearch as a Flow
 
