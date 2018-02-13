@@ -5,7 +5,7 @@ The Elasticsearch connector provides Akka Stream sources and sinks for Elasticse
 
 For more information about Elasticsearch please visit the [official documentation](https://www.elastic.co/guide/index.html).
 
-This connector is availavle as a part of Alpakka (https://github.com/akka/alpakka/pull/221). I would like to test improvements or new features at this repository and feedback them to Alpakka.
+This repository hasn't been maintained no longer because this connector is availavle as a part of Alpakka (https://github.com/akka/alpakka/pull/221).
 
 ## Artifacts
 
